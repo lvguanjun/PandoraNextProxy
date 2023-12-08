@@ -25,7 +25,6 @@ models_route = "/backend-api/models"
 async def proxy_route(request: Request):
     # 向目标URL发送请求
     target_url = TARGET_HOST + models_route
-    print(request.headers)
     headers = dict(request.headers)
     headers["authority"] = headers["host"]
     resp = requests.get(target_url, params=request.query_params, headers=headers)
