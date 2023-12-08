@@ -33,8 +33,9 @@ async def proxy_route(request: Request):
         return Response(
             content=resp.content, status_code=resp.status_code, headers=resp.headers
         )
-    response = resp.json()
 
+    # 处理响应数据
+    response = resp.json()
     for model in response["models"]:
         if model["slug"] == "gpt-4":
             mobile_model = deepcopy(model)
