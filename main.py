@@ -41,6 +41,10 @@ async def proxy_route(request: Request):
             mobile_model["slug"] = "gpt-4-mobile"
             mobile_model["title"] = "GPT-4 Mobile"
             break
+    else:
+        return Response(
+            content=resp.content, status_code=resp.status_code, headers=resp.headers
+        )
     # 更新响应数据
     data["models"].append(mobile_model)
     content = json.dumps(data)
