@@ -16,7 +16,7 @@ from fastapi import FastAPI, Request, Response
 app = FastAPI()
 
 # 目标服务器地址
-TARGET_HOST = "http://localhost:8181"
+TARGET_HOST = "http://localhost:8182"
 
 models_route = "/backend-api/models"
 
@@ -34,18 +34,18 @@ async def proxy_route(request: Request):
             content=resp.content, status_code=resp.status_code, headers=resp.headers
         )
 
-    # 处理响应数据
-    response = resp.json()
-    for model in response["models"]:
+    data = resp.json()
+    for model in data["models"]:
         if model["slug"] == "gpt-4":
             mobile_model = deepcopy(model)
             mobile_model["slug"] = "gpt-4-mobile"
             mobile_model["title"] = "GPT-4 Mobile"
             break
     # 更新响应数据
-    response["models"].append(mobile_model)
-    content = json.dumps(response)
+    data["models"].append(mobile_model)
+    content = json.dumps(data)
     # 返回更新后的响应
+    resp.headers["content-length"] = str(len(content))
     return Response(content=content, status_code=200, headers=resp.headers)
 
 
