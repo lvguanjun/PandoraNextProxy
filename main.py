@@ -20,6 +20,8 @@ TARGET_HOST = "http://localhost:8182"
 
 models_route = "/backend-api/models"
 
+conversation_meta_route = "/backend-api/conversation/{conversation_id}"
+
 
 @app.get(models_route)
 async def proxy_route(request: Request):
@@ -51,6 +53,36 @@ async def proxy_route(request: Request):
     # 返回更新后的响应
     resp.headers["content-length"] = str(len(content))
     return Response(content=content, status_code=200, headers=resp.headers)
+
+
+@app.get(conversation_meta_route)
+async def proxy_conversation_route(request: Request, conversation_id: str):
+    # 向目标URL发送请求
+    target_url = TARGET_HOST + conversation_meta_route.format(
+        conversation_id=conversation_id
+    )
+    resp = requests.get(
+        target_url, params=request.query_params, headers=request.headers
+    )
+
+    if resp.status_code == 200:
+        data = resp.json()
+        # 遍历所有的mapping，如果找到 "model_slug": "gpt-4"，则将其改为 "gpt-4-mobile"
+        for node in data["mapping"].values():
+            if "message" in node and "metadata" in node["message"]:
+                if node["message"]["metadata"].get("model_slug") == "gpt-4":
+                    node["message"]["metadata"]["model_slug"] = "gpt-4-mobile"
+
+        # 更新响应数据
+        content = json.dumps(data)
+        # 更新响应头
+        resp.headers["content-length"] = str(len(content))
+        return Response(content=content, status_code=200, headers=resp.headers)
+    else:
+        # 如果响应状态码不是200，直接返回原始响应
+        return Response(
+            content=resp.content, status_code=resp.status_code, headers=resp.headers
+        )
 
 
 if __name__ == "__main__":
