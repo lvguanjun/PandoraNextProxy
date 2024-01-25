@@ -69,9 +69,10 @@ async def proxy_conversation_route(request: Request, conversation_id: str):
         data = resp.json()
         # 遍历所有的mapping，如果找到 "model_slug": "gpt-4"，则将其改为 "gpt-4-mobile"
         for node in data["mapping"].values():
-            if "message" in node and "metadata" in node["message"]:
-                if node["message"]["metadata"].get("model_slug") == "gpt-4":
-                    node["message"]["metadata"]["model_slug"] = "gpt-4-mobile"
+            if message := node.get("message"):
+                if metadata := message.get("metadata"):
+                    if metadata.get("model_slug") == "gpt-4":
+                        metadata["model_slug"] = "gpt-4-mobile"
 
         # 更新响应数据
         content = json.dumps(data)
